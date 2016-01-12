@@ -77,6 +77,7 @@ To check if you win (cross fingers)
 
     pickalotto powerball --check 9,10,16,20,45,23 --input powerball.csv
     
+The numbers for `--check` must be separated with a comma with the powerball number as the last one.
 
 You will see a result similar to this if you win. Only the winning numbers will
 be shown
@@ -91,7 +92,6 @@ Of course the jackpot, if you win the jackpot.
 If you want to show all the numbers:
 
     pickalotto powerball --check 9,10,16,20,45,23 --input powerball.csv --show-all
-
 
 ---
 
