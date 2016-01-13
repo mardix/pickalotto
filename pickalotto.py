@@ -22,9 +22,9 @@ import datetime
 
 __author__ = 'mardix'
 NAME = "PickALotto"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
-MEGAMILLION = "megamillion"
+MEGAMILLIONS = "megamillions"
 POWERBALL = "powerball"
 POWERBALL_MOST_DRAWN = "powerball_md"
 
@@ -43,7 +43,7 @@ PRIZES = {
             (4, True): 50000,
             (5, True): "JACKPOT"
         },
-    "megamillion": {
+    "megamillions": {
             (0, False): 0,
             (1, False): 0,
             (2, False): 0,
@@ -60,10 +60,10 @@ PRIZES = {
 }
 
 GAMES = {
-    MEGAMILLION: {
+    MEGAMILLIONS: {
         "balls": range(1, 75 + 1),
         "powerballs": range(1, 15 + 1),
-        "prizes": PRIZES["megamillion"]
+        "prizes": PRIZES["megamillions"]
     },
     POWERBALL: {
         "balls": range(1, 69 + 1),
@@ -71,8 +71,8 @@ GAMES = {
         "prizes": PRIZES["powerball"]
     },
     POWERBALL_MOST_DRAWN: {
-        "balls": [26, 41, 22, 16, 42, 35, 39, 45, 15, 19, 40, 10, 32, 9, 13, 28, 20, 8],
-        "powerballs": [20, 6, 2, 18, 9, 1,  11, 26,  10, 12, 17,  23, 24, 15],
+        "balls": [2, 8, 9, 10, 12, 13, 14, 15, 16, 19, 20, 22, 26, 27, 28, 29, 30, 32, 35, 39, 40, 41, 42, 45, 47, 55, 56, 57, 62, 63, 64, 68, 69],
+        "powerballs": [1, 2, 6, 9, 10, 11, 12, 13, 15, 17, 18, 20, 21, 22, 23, 24, 26],
         "prizes": PRIZES["powerball"]
     }
 }
@@ -207,7 +207,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("game",
-                        help="The game to play [powerball | megamillion]",
+                        help="The game to play [powerball | megamillions]",
                         )
 
     parser.add_argument("--pick", "-p",
