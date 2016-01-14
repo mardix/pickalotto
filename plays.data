@@ -1,0 +1,7 @@
+
+powerball:
+    balls: 1, 2,3,4,
+    gold
+    drawn
+    prizes:
+        0, True: 0

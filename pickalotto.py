@@ -18,15 +18,15 @@ import csv
 import string
 import random
 import datetime
+try:
+    import yaml
+except ImportError as ex:
+    print("PyYaml is missing")
 
-
-__author__ = 'mardix'
 NAME = "PickALotto"
-__version__ = "0.1.1"
+__author__ = 'mardix'
+__version__ = "0.1.2" # Version 0.2.0 to make use of plays.data to load plays
 
-MEGAMILLIONS = "megamillions"
-POWERBALL = "powerball"
-POWERBALL_MOST_DRAWN = "powerball_md"
 
 PRIZES = {
     "powerball": {
@@ -59,18 +59,18 @@ PRIZES = {
         },
 }
 
-GAMES = {
-    MEGAMILLIONS: {
+PLAYS = {
+    "megamillions": {
         "balls": range(1, 75 + 1),
         "powerballs": range(1, 15 + 1),
         "prizes": PRIZES["megamillions"]
     },
-    POWERBALL: {
+    "powerball": {
         "balls": range(1, 69 + 1),
         "powerballs": range(1, 26 + 1),
         "prizes": PRIZES["powerball"]
     },
-    POWERBALL_MOST_DRAWN: {
+    "powerball_md": {
         "balls": [2, 8, 9, 10, 12, 13, 14, 15, 16, 19, 20, 22, 26, 27, 28, 29, 30, 32, 35, 39, 40, 41, 42, 45, 47, 55, 56, 57, 62, 63, 64, 68, 69],
         "powerballs": [1, 2, 6, 9, 10, 11, 12, 13, 15, 17, 18, 20, 21, 22, 23, 24, 26],
         "prizes": PRIZES["powerball"]
@@ -164,9 +164,9 @@ def match_winning_number(winning_number, number, prizes, max_balls=5, max_powerb
     :return: tuple, (number played, prize won, the matching set)
     """
     wn = winning_number[:max_balls]
-    pwn = winning_number[max_powerball:][0]
+    pwn = winning_number[max_balls:][0]
     wb = number[:max_balls]
-    gb = number[max_powerball:][0]
+    gb = number[max_balls:][0]
     wb_hit = sum(1 for x in wb if x in wn)
     gb_hit = gb == pwn
     result = (wb_hit, gb_hit)
@@ -179,14 +179,6 @@ def match_winning_number(winning_number, number, prizes, max_balls=5, max_powerb
 def main():
     import argparse
 
-    def format_number(l):
-        """
-         Pretty print the numbers
-        """
-        p = " ".join(["(%s)" % i for i in l[:5]])
-        p += " [* %s]" % l[5]
-        return p
-
     def print_table(table):
         t = ['|' + ''.join('%5s' % i for i in row) + ' ' for row in table]
         hdr = '+' + (len(t[0])+5) * '-' + '+'
@@ -196,9 +188,6 @@ def main():
         print ("")
         print ("::: %s :::" % title)
         print ("")
-
-    def show_line():
-        print ("_" * 80)
         
     def header():
         print (__doc__)
@@ -238,66 +227,68 @@ def main():
     #                    help="On PLAY, a method to select a quick pick numbers"
     #                         " ie [--config ]")
 
-    try:
-        args = parser.parse_args()
-        game_name = args.game
-        games = GAMES[game_name]
 
-        header()
-        if args.pick:
-            num = args.pick
-            output = args.output
+    args = parser.parse_args()
+    game_name = args.game
+    games = PLAYS[game_name]
 
-            while True:
-                title("Generating %s numbers" % game_name.upper())
+    header()
+    if args.pick:
+        num = args.pick
+        output = args.output
 
-                numbers = pick_numbers(balls=games["balls"],
-                                       powerballs=games["powerballs"],
-                                       total_picks=int(num))
-                print_table(numbers)
-                print ("")
+        while True:
+            title("Generating %s numbers" % game_name.upper())
 
-                while True:
-                    action = raw_input("* Save these numbers? (y=Yes, r=Reload, q=Quit) : ")
-                    if action.lower() == "y":
-                        if not output:
-                            d = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                            output = "%s/" % os.getcwd()
-                            output += "%s-%s-picks-%s" % (game_name, num, d)
-                        if not output.endswith(".csv"):
-                            output += ".csv"
-                        export_to_csv(numbers, output)
-                        print("-- Numbers saved successfully at: %s" % output)
-                        exit()
-                    elif action.lower() == "r":
-                        break
-                    elif action.lower() == "q":
-                        print("-- Quitting without saving numbers")
-                        exit()
-
-        elif args.check:
-            title("Checking %s winning numbers and prizes" % game_name.upper())
-            print("Good luck! :)")
-            print("")
-            prizes = games["prizes"]
-            input = args.input
-            show_all = args.show_all
-
-            winning_number = args.check.split(",")
-            numbers = import_from_csv(input)
-
-            results_nums = []
-            for number in numbers:
-                r = match_winning_number(winning_number, number, prizes)
-                show = True if show_all else True if r[1] != 0 else False
-                if show:
-                    results_nums.append(number + ["$ ", "%s" % str(r[1])])
-            print_table(results_nums)
+            numbers = pick_numbers(balls=games["balls"],
+                                   powerballs=games["powerballs"],
+                                   total_picks=int(num))
+            print_table(numbers)
             print ("")
 
-    except Exception as e:
-        print("Error")
-        print(e)
+            while True:
+                action = raw_input("* Save these numbers? (y=Yes, r=Reload, q=Quit) : ")
+                if action.lower() == "y":
+                    if not output:
+                        d = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                        output = "%s/" % os.getcwd()
+                        output += "%s-%s-picks-%s" % (game_name, num, d)
+                    if not output.endswith(".csv"):
+                        output += ".csv"
+                    export_to_csv(numbers, output)
+                    print("-- Numbers saved successfully at: %s" % output)
+                    exit()
+                elif action.lower() == "r":
+                    break
+                elif action.lower() == "q":
+                    print("-- Quitting without saving numbers")
+                    exit()
+
+    elif args.check:
+        title("Checking %s winning numbers and prizes" % game_name.upper())
+        print("Good luck! :)")
+        print("")
+        prizes = games["prizes"]
+        input = args.input
+        show_all = args.show_all
+
+        winning_number = map(int, args.check.split(","))
+        numbers = import_from_csv(input)
+
+        results_nums = []
+        for number in numbers:
+            r = match_winning_number(winning_number, map(int,number), prizes)
+            show = True if show_all else True if r[1] != 0 else False
+            if show:
+                results_nums.append(number + ["$ ", "%s" % str(r[1])])
+        if results_nums:
+            print_table(results_nums)
+        else:
+            print("It seems like you are out of luck!")
+            print("Next time... :)")
+        print ("")
+
+
 
     print("Done")
 
