@@ -25,7 +25,7 @@ except ImportError as ex:
 
 NAME = "PickALotto"
 __author__ = 'mardix'
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 CWD = os.getcwd()
 plays_data_file = CWD + "/plays.data"
@@ -265,7 +265,9 @@ def main():
 
                 numbers = pick_numbers(balls=games["balls"],
                                        bonus=games["bonus"],
-                                       total_picks=int(num))
+                                       total_picks=int(num),
+                                       balls_to_draw=games["balls_to_draw"],
+                                       bonus_to_draw=games["bonus_to_draw"])
                 print_table(numbers)
                 print ("")
 
@@ -301,7 +303,10 @@ def main():
 
             results_nums = []
             for number in numbers:
-                r = match_winning_number(winning_number, map(int,number), prizes)
+                r = match_winning_number(winning_number=winning_number,
+                                         number=map(int, number),
+                                         prizes=prizes,
+                                         balls_to_draw=games["balls_to_draw"])
                 show = True if show_all else True if r[1] != 0 else False
                 if show:
                     results_nums.append(number + ["$ ", "%s" % str(r[1])])
