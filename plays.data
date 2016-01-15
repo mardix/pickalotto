@@ -1,7 +1,61 @@
+# PickALotto
+# plays.data
+# Contains numbers to play and prizes for each play
+# https://github.com/mardix/pickalotto
 
 powerball:
-    balls: 1, 2,3,4,
-    gold
-    drawn
+    balls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69]
+    bonus: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+    balls_to_draw: 5
+    bonus_to_draw: 1
     prizes:
-        0, True: 0
+        0, False: 0
+        1, False: 0
+        2, False: 0
+        3, False: 7
+        4, False: 100
+        5, False: 1000000
+        0, True: 4
+        1, True: 4
+        2, True: 7
+        3, True: 100
+        4, True: 50000
+        5, True: "JACKPOT"    
+
+megamillions:
+    balls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
+    bonus: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    balls_to_draw: 5
+    bonus_to_draw: 1
+    prizes:
+        0, False: 0
+        1, False: 0
+        2, False: 0
+        3, False: 5
+        4, False: 500
+        5, False: 1000000
+        0, True: 1
+        1, True: 2
+        2, True: 5
+        3, True: 50
+        4, True: 5000
+        5, True: "JACKPOT"
+
+powerball_most_drawn:
+    balls: [2, 8, 9, 10, 12, 13, 14, 15, 16, 19, 20, 22, 26, 27, 28, 29, 30, 32, 35, 39, 40, 41, 42, 45, 47, 55, 56, 57, 62, 63, 64, 68, 69]
+    bonus: [1, 2, 6, 9, 10, 11, 12, 13, 15, 17, 18, 20, 21, 22, 23, 24, 26]
+    balls_to_draw: 5
+    bonus_to_draw: 1
+    prizes:
+        0, False: 0
+        1, False: 0
+        2, False: 0
+        3, False: 7
+        4, False: 100
+        5, False: 1000000
+        0, True: 4
+        1, True: 4
+        2, True: 7
+        3, True: 100
+        4, True: 50000
+        5, True: "JACKPOT"

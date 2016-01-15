@@ -1,7 +1,7 @@
 
 #PickALotto
 
-Winning!
+Winning 0.2.x!
 
 ---
 
@@ -44,7 +44,7 @@ winning against all the numbers you played.
 The example below will generate 5 random numbers for `powerball`. You can also chose
 `megamillion`.
 
-    pickalotto powerball --pick 5
+    pickalotto --game powerball --pick 5
     
     
 Folllow the instructions on the screen that asks you to SAVE, RELOAD and QUIT.
@@ -57,7 +57,7 @@ If you QUIT, duh!
 
 Now, if you want to save your numbers somewhere else, you can use `--output` arg to do so:
 
-    pickalotto powerball --pick 5 --output powerball.csv
+    pickalotto -g powerball -p 5 -o powerball.csv
 
 ---
 
@@ -75,7 +75,7 @@ Let's say the following numbers come out for `powerball`
 
 To check if you win (cross fingers)
 
-    pickalotto powerball --check 9,10,16,20,45,23 --input powerball.csv
+    pickalotto -g powerball --check 9,10,16,20,45,23 --input powerball.csv
     
 The numbers for `--check` must be separated with a comma with the powerball number as the last one.
 
@@ -91,8 +91,109 @@ Of course the jackpot, if you win the jackpot.
 
 If you want to show all the numbers:
 
-    pickalotto powerball --check 9,10,16,20,45,23 --input powerball.csv --show-all
+    pickalotto -g powerball -c 9,10,16,20,45,23 -i powerball.csv --show-all
 
+---
+
+## Advanced
+
+You can setup your plays to create your own drawings
+
+### plays.data
+
+By default PickALotto will attempt to load from the current dir `plays.data` 
+which contains the numbers and prizes.
+
+`plays.data` is a Yaml file. 
+
+This will list all the games available
+
+    pickalotto 
+    
+
+To load the plays.data
+
+    pickalotto --plays path/to/plays.data -g megamillion -p 5
+
+Combine it with other actions:
+
+    pickalotto --plays path/to/plays.data -g megamillion -p 5
+
+
+`plays.data` example
+
+FYI, the file is in Yaml
+
+
+    powerball:
+        balls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        bonus: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+        balls_to_draw: 5
+        bonus_to_draw: 1
+        prizes:
+            0, False: 0
+            1, False: 0
+            2, False: 0
+            3, False: 7
+            4, False: 100
+            5, False: 1000000
+            0, True: 4
+            1, True: 4
+            2, True: 7
+            3, True: 100
+            4, True: 50000
+            5, True: "JACKPOT"    
+    
+    megamillions:
+        balls: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        bonus: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        balls_to_draw: 5
+        bonus_to_draw: 1
+        prizes:
+            0, False: 0
+            1, False: 0
+            2, False: 0
+            3, False: 5
+            4, False: 500
+            5, False: 1000000
+            0, True: 1
+            1, True: 2
+            2, True: 5
+            3, True: 50
+            4, True: 5000
+            5, True: "JACKPOT"
+    
+    powerball_most_drawn:
+        balls: [2, 8, 9, 10, 12, 13, 14, 15, 16, 19]
+        bonus: [1, 2, 6, 9, 10, 11, 12, 13, ]
+        balls_to_draw: 5
+        bonus_to_draw: 1
+        prizes:
+            0, False: 0
+            1, False: 0
+            2, False: 0
+            3, False: 7
+            4, False: 100
+            5, False: 1000000
+            0, True: 4
+            1, True: 4
+            2, True: 7
+            3, True: 100
+            4, True: 50000
+            5, True: "JACKPOT"
+            
+- balls: list of numbers to pick
+- bonus: list of bonus balls to pick
+- balls_to_draw: the number of balls to draw
+- bonus_to_draw: The number of bonus balls to draw
+- prize: dict of tuple match (the total balls won, Bonus ball picked)
+
+    0, False: 0 -> means, balls match 0 numbers + 0 bonus. It will give out $0 as prize
+    
+    4, True: 50000 -> means, balls match 4 numbers + the bonus ball. It will give out $5000 as prize
+    
+    5, True: Jackpot -> means, balls match 5 numbers + the bonus ball. It will give out Jackpot as prize
+    
 ---
 
 ### For contributors
