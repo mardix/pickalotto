@@ -25,13 +25,13 @@ except ImportError as ex:
 
 NAME = "PickALotto"
 __author__ = 'mardix'
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 CWD = os.getcwd()
-plays_data_file = CWD + "/plays.data"
+games_data_file = CWD + "/pickalotto.data"
 
 # Default Plays for Powerball and Megamillion
-PLAYS = {
+DEFAULT_GAMES = {
     "megamillions": {
         "balls": range(1, 76),
         "bonus": range(1, 16),
@@ -76,25 +76,6 @@ PLAYS = {
 
 # ------------------------------------------------------------------------------
 
-def parse_plays_data(f):
-    """
-    Parse the plays.data file and make sure prizes are set as tuple
-    for prizes: ie:
-        0, True: 1000 will become (0, True): 1000
-    :param f:
-    :return: dict
-    """
-    with open(f) as yfile:
-        plays = yaml.load(yfile)
-        for k, v in plays.items():
-            prizes = {}
-            for pk, pv in v["prizes"].items():
-                balls = int(pk.split(",", 2)[0])
-                bonus = True if pk.split(",", 2)[1].lower() == "true" else False
-                prizes.update({(balls, bonus): pv})
-            plays[k]["prizes"] = prizes
-    return plays
-
 def import_from_csv(filename):
     numbers = []
     with open(filename, 'rb') as f:
@@ -115,81 +96,109 @@ def export_to_csv(list, filename):
             writer.writerow(l)
 
 
-def gen_ticket_key(length=8):
-    """
-    Generate a ticket key
-    :param length:
-    :return:
-    """
-    char_set = string.ascii_uppercase + string.digits
-    return ''.join(random.sample(char_set * (length - 1), length))
+class Lotto(object):
 
+    def __init__(self):
+        self.games = DEFAULT_GAMES
 
-def gen_random_numbers(numbers, total=5):
-    """
-    Given a list of numbers, it will randomly create a sample of x total items
-    :param numbers: list - Numbers to create the sample
-    :param total: int - Total number to have on the list
-    :return: list
-    """
-    return sorted(random.sample(numbers, total))
+    @staticmethod
+    def gen_random_numbers(numbers, total=5):
+        """
+        Given a list of numbers, it will randomly create a sample of x total items
+        :param numbers: list - Numbers to create the sample
+        :param total: int - Total number to have on the list
+        :return: list
+        """
+        return sorted(random.sample(numbers, total))
 
+    @staticmethod
+    def gen_ticket_key(length=8):
+        """
+        Generate a ticket key
+        :param length:
+        :return:
+        """
+        char_set = string.ascii_uppercase + string.digits
+        return ''.join(random.sample(char_set * (length - 1), length))
 
-def pick_numbers(balls,
-                 bonus,
-                 total_picks=5,
-                 balls_to_draw=5,
-                 bonus_to_draw=1,
-                 max_failed_attempt=100):
-    """
-    To create a random pick from a list of numbers
-    :param balls: list - All White balls
-    :param bonus: list - All power balls numbers
-    :param total_picks: int - Total numbers to pick
-    :param balls_to_draw: int - Total of balls to select
-    :param bonus_to_draw: int - Total of powerball number to pick
-    :param max_failed_attempt: int - The number of failed numbers until it gives up
-    :return: list
-    """
-    pick_count = 0
-    failed_attempt = 0
-    numbers = []
-    while True:
-        pick = gen_random_numbers(balls, balls_to_draw)
-        pick += gen_random_numbers(bonus, bonus_to_draw)
+    def load_games_data(self, f):
+        with open(f) as yfile:
+            games = yaml.load(yfile)
+            for k, v in games.items():
+                prizes = {}
+                for pk, pv in v["prizes"].items():
+                    balls = int(pk.split(",", 2)[0])
+                    bonus = True if pk.split(",", 2)[1].lower() == "true" else False
+                    prizes.update({(balls, bonus): pv})
+                games[k]["prizes"] = prizes
+        self.games = games
 
-        if pick not in numbers:
-            numbers.append(pick)
-            pick_count += 1
-            if pick_count >= total_picks:
-                break
-        else:
-            failed_attempt += 1
-            if failed_attempt == max_failed_attempt:
-                raise Exception("Pick Numbers max failed attempt reached")
-    return numbers
+    def select(self, game):
+        """
+        To select a game
+        :param game:
+        :return:
+        """
+        self.game = self.games[game]
 
+    def pick(self, total_picks):
+        """
+        Return a list of list containing the numbers to plays
+        :param total_picks:
+        :return: list
+        """
+        pick_count = 0
+        failed_attempt = 0
+        numbers = []
+        while True:
+            pick = self.gen_random_numbers(self.game["balls"], self.game["balls_to_draw"])
 
-def match_winning_number(winning_number, number, prizes, balls_to_draw=5, max_powerball=1):
-    """
-    :param winning_number: list - list of the winning number
-    :param number: List - The number to check against winning number
-    :param prizes:
-    :param balls_to_draw: int - Total of balls to select
-    :param max_powerball: int - Total of powerball number to pick
-    :return: tuple, (number played, prize won, the matching set)
-    """
-    balls = winning_number[:balls_to_draw]
-    bonus = winning_number[balls_to_draw:][0]
-    wb = number[:balls_to_draw]
-    gb = number[balls_to_draw:][0]
-    wb_hit = sum(1 for x in wb if x in balls)
-    gb_hit = gb == bonus
-    result = (wb_hit, gb_hit)
-    prize = prizes[result]
-    return number, prize, result
+            if self.game["bonus"]:
+                pick += self.gen_random_numbers(self.game["bonus"], self.game["bonus_to_draw"])
 
+            if pick not in numbers:
+                numbers.append(pick)
+                pick_count += 1
+                if pick_count >= total_picks:
+                    break
+            else:
+                failed_attempt += 1
+                if failed_attempt == max_failed_attempt:
+                    raise Exception("Pick Numbers max failed attempt reached")
+        return numbers
 
+    def match(self, winning_number, number):
+        """
+        Match the winning number with
+        :param winning_number: list - list of the winning number
+        :param number: List - The number to check against winning number
+        :return:
+        """
+        winning_number = map(int, winning_number)
+        number = map(int, number)
+        balls = winning_number[:self.game["balls_to_draw"]]
+        wb = number[:self.game["balls_to_draw"]]
+        wb_hit = sum(1 for x in wb if x in balls)
+        result = (wb_hit, False)
+
+        if self.game["bonus"]:
+            bonus = winning_number[self.game["balls_to_draw"]:][0]
+            gb = number[self.game["balls_to_draw"]:][0]
+            gb_hit = gb == bonus
+            result = (wb_hit, gb_hit)
+
+        prize = self.game["prizes"][result]
+        return number, prize, result
+
+    def match_numbers(self, winning_number, numbers):
+        """
+        To match a list of numbers
+        :param winning_numbers:
+        :param numbers:
+        :return: generator
+        """
+        for number in numbers:
+            yield self.match(winning_number=winning_number, number=number)
 # ------------------------------------------------------------------------------
 
 def main():
@@ -198,7 +207,7 @@ def main():
     def print_table(table):
         t = ['|' + ''.join('%5s' % i for i in row) + ' ' for row in table]
         hdr = '+' + (len(t[0])+5) * '-' + '+'
-        print('\n'.join( [hdr] + t + [hdr]))
+        print('\n'.join([hdr] + t + [hdr]))
 
     def title(title):
         print ("")
@@ -216,72 +225,66 @@ def main():
                         )
 
     parser.add_argument("--pick", "-p",
-                        help="Select the total amount to Pick and Play"
+                        help="Select the total numbers to Pick and Play"
                              " ie [--pick 15]")
-    parser.add_argument("--output", "-o",
-                        help="With --pick. After generating the numbers. "
-                             "The file, in CSV format, to save the numbers to. "
-                             " ie [--pick 15 --output myfile.csv]")
 
     parser.add_argument("--check", "-c",
                         help="To check a winning number against all the "
-                             "numbers picked."
+                             "numbers picked. "
                              "Separate the winning numbers with commas, with "
-                             "the POWERBALL being last"
+                             "the BONUS ball being last"
                              " ie [--check 14,5,8,3,19,26 ]")
-    parser.add_argument("--input", "-i",
-                        help="With --check. When checking for a winning number,"
-                             "import the csv file containing the numbers"
-                             " ie [--check 14,5,8,3,19,26  --input myfile.csv]")
+
+    parser.add_argument("--file", "-f",
+                        help="With --pick or --check."
+                             "The file, in CSV format, to save to or load numbers from. "
+                             " ie [--pick 15 --file myfile.csv]")
+
     parser.add_argument("--show-all",
-                        help="When checking for a winning number, import the "
+                        help="To show all plays when checking for a winning number, import the "
                              "csv file containing the numbers"
-                             " ie [--check 14,5,8,3,19,26  --input "
+                             " ie [--check 14,5,8,3,19,26  --file "
                              "myfile.csv --show-all]",
                         action="store_true")
-    parser.add_argument("--plays",
-                        help="Path of plays.data file to load. When empty it will attempt local directory"
-                             " ie [--plays plays.data --check 14,5,8,3,19,26 ]")
+    parser.add_argument("--data",
+                        help="Path of pickalotto.data file to load. When empty it will attempt local directory"
+                             " ie [--data pickalotto.data --check 14,5,8,3,19,26 ]")
     parser.add_argument("--list", "-l",
                         help="List all the games available",
                         action="store_true")
     try:
 
         args = parser.parse_args()
-        plays_file = args.plays or plays_data_file
         game_name = args.game
+        csv_file = args.file
 
-        if os.path.isfile(plays_file):
-            PLAYS.update(parse_plays_data(plays_file))
+        lotto = Lotto()
+        data_file = args.data or games_data_file
+        if os.path.isfile(data_file):
+            lotto.load_games_data(data_file)
 
         header()
         if args.pick:
-            games = PLAYS[game_name]
+            lotto.select(game_name)
             num = args.pick
-            output = args.output
 
             while True:
                 title("Generating %s numbers" % game_name.upper())
-
-                numbers = pick_numbers(balls=games["balls"],
-                                       bonus=games["bonus"],
-                                       total_picks=int(num),
-                                       balls_to_draw=games["balls_to_draw"],
-                                       bonus_to_draw=games["bonus_to_draw"])
+                numbers = lotto.pick(int(num))
                 print_table(numbers)
                 print ("")
 
                 while True:
                     action = raw_input("* Save these numbers? (y=Yes, r=Reload, q=Quit) : ")
                     if action.lower() == "y":
-                        if not output:
+                        if not csv_file:
                             d = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                            output = "%s/" % os.getcwd()
-                            output += "%s-%s-picks-%s" % (game_name, num, d)
-                        if not output.endswith(".csv"):
-                            output += ".csv"
-                        export_to_csv(numbers, output)
-                        print("-- Numbers saved successfully at: %s" % output)
+                            csv_file = "%s/" % os.getcwd()
+                            csv_file += "%s-%s-picks-%s" % (game_name, num, d)
+                        if not csv_file.endswith(".csv"):
+                            csv_file += ".csv"
+                        export_to_csv(numbers, csv_file)
+                        print("-- Numbers saved successfully at: %s" % csv_file)
                         exit()
                     elif action.lower() == "r":
                         break
@@ -290,26 +293,21 @@ def main():
                         exit()
 
         elif args.check:
-            games = PLAYS[game_name]
+            lotto.select(game_name)
             title("Checking %s winning numbers and prizes" % game_name.upper())
             print("Good luck! :)")
             print("")
-            prizes = games["prizes"]
-            input = args.input
+
+            winning_number = args.check.split(",")
             show_all = args.show_all
-
-            winning_number = map(int, args.check.split(","))
-            numbers = import_from_csv(input)
-
+            numbers = import_from_csv(csv_file)
+            results = lotto.match_numbers(winning_number=winning_number,
+                                          numbers=numbers)
             results_nums = []
-            for number in numbers:
-                r = match_winning_number(winning_number=winning_number,
-                                         number=map(int, number),
-                                         prizes=prizes,
-                                         balls_to_draw=games["balls_to_draw"])
+            for r in results:
                 show = True if show_all else True if r[1] != 0 else False
                 if show:
-                    results_nums.append(number + ["$ ", "%s" % str(r[1])])
+                    results_nums.append(r[0] + ["$ ", "%s" % str(r[1])])
             if results_nums:
                 print_table(results_nums)
             else:
@@ -317,13 +315,14 @@ def main():
                 print("Next time... :)")
             print ("")
         else:
-            title("Showing Games To Play ")
-            for name in PLAYS:
+            title("Listing Games To Play ")
+            for name in lotto.games:
                 print("- %s" % name)
             print("")
 
     except Exception as e:
         print("Error: %s" % e)
+        raise
 
     print("Done")
 

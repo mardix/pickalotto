@@ -1,7 +1,7 @@
 
 #PickALotto
 
-Winning 0.2.x!
+Winning 0.3.x!
 
 ---
 
@@ -55,9 +55,9 @@ If you RELOAD, it will pick new random numbers.
 
 If you QUIT, duh!
 
-Now, if you want to save your numbers somewhere else, you can use `--output` arg to do so:
+Now, if you want to save your numbers somewhere else, you can use `--file` arg to do so:
 
-    pickalotto -g powerball -p 5 -o powerball.csv
+    pickalotto -g powerball -p 5 --file powerball.csv
 
 ---
 
@@ -75,9 +75,9 @@ Let's say the following numbers come out for `powerball`
 
 To check if you win (cross fingers)
 
-    pickalotto -g powerball --check 9,10,16,20,45,23 --input powerball.csv
+    pickalotto -g powerball --check 9,10,16,20,45,23 --file powerball.csv
     
-The numbers for `--check` must be separated with a comma with the powerball number as the last one.
+The numbers for `--check` must be separated with a comma with the BONUS number as the last one.
 
 You will see a result similar to this if you win. Only the winning numbers will
 be shown
@@ -91,7 +91,38 @@ Of course the jackpot, if you win the jackpot.
 
 If you want to show all the numbers:
 
-    pickalotto -g powerball -c 9,10,16,20,45,23 -i powerball.csv --show-all
+    pickalotto -g powerball -c 9,10,16,20,45,23 -f powerball.csv --show-all
+
+---
+
+## CLI Arguments
+
+#### --game | -g
+
+The game to select
+
+#### --pick | -p
+
+To create new plays by selecting the numbers of pick to play
+
+#### --check | -c
+
+To check on winning number where --check value is a comma separated value where the 
+last number is the BONUS ball
+
+#### --file | -f
+
+The location of .csv file to save to or load from plays.
+
+#### --show-all
+
+To show all played numbers when --check a winning number
+
+#### --data
+
+Path of pickalotto.data file to load. If empty, it will attempt to load it from the 
+current directory
+
 
 ---
 
@@ -99,28 +130,28 @@ If you want to show all the numbers:
 
 You can setup your plays to create your own drawings
 
-### plays.data
+### pickalotto.data
 
-By default PickALotto will attempt to load from the current dir `plays.data` 
+By default PickALotto will attempt to load from the current dir `pickalotto.data` 
 which contains the numbers and prizes.
 
-`plays.data` is a Yaml file. 
+`pickalotto.data` is a Yaml file. 
 
 This will list all the games available
 
     pickalotto 
     
 
-To load the plays.data
+To load the pickalotto.data from a different location
 
-    pickalotto --plays path/to/plays.data -g megamillion -p 5
+    pickalotto --data path/to/pickalotto.data
 
 Combine it with other actions:
 
-    pickalotto --plays path/to/plays.data -g megamillion -p 5
+    pickalotto --data path/to/pickalotto.data -g megamillion -p 5
 
 
-`plays.data` example
+`pickalotto.data` example
 
 FYI, the file is in Yaml
 
@@ -182,8 +213,21 @@ FYI, the file is in Yaml
             4, True: 50000
             5, True: "JACKPOT"
             
+    nc_cash_5:
+        balls: [2, 8, 9, 10, 12, 13, 14, 15, 16, 19]
+        bonus: []
+        balls_to_draw: 5
+        bonus_to_draw: 0
+        prizes:
+            0, False: 0
+            1, False: 0
+            2, False: 1
+            3, False: 3
+            4, False: 4
+            5, False: "JACKPOT"
+            
 - balls: list of numbers to pick
-- bonus: list of bonus balls to pick
+- bonus: list of bonus balls to pick. If empty, it will not chose bonus
 - balls_to_draw: the number of balls to draw
 - bonus_to_draw: The number of bonus balls to draw
 - prize: dict of tuple match (the total balls won, Bonus ball picked)
