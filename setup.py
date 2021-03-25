@@ -36,7 +36,7 @@ setup(
     entry_points=dict(console_scripts=['pickalotto=pickalotto:main']),
     keywords=['lottery', 'powerball', 'megamillion'],
     platforms='any',
-    install_requires=['pyyaml==3.11'],
+    install_requires=['pyyaml==5.4'],
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
